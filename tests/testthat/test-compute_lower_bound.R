@@ -154,12 +154,16 @@ test_that("computing the lower bound works", {
   # Compute the lower bound using the cpp function
   ###########################################################
   list_feature_adjmat <- list(S, V, W)
-  list_multiplied_feature_adjmat <- get_elementwise_multiplied_matrices(adj, list_feature_adjmat)
-  denom <- get_matrix_for_denominator(N, list_feature_adjmat)
+  list_multiplied_feature_adjmat <- get_elementwise_multiplied_matrices_R(adj, list_feature_adjmat)
+  denom <- get_matrix_for_denominator_R(N, list_feature_adjmat)
   list_multiplied_feature_adjmat[[1]] <- denom
 
-  alpha_LB <- run_MM_with_features(N, K, alpha, list_multiplied_feature_adjmat, tau, verbose = 2)
+  list_multiplied_feature_adjmat <- lapply(list_multiplied_feature_adjmat, FUN = function(x) x*1)
+  
+  alpha_LB <- run_MM_with_features(N, K, alpha, 
+                                   list_multiplied_feature_adjmat, tau, verbose = 2)
 
+  
   # Check if it works
   expect_equal(alpha_LB[[2]], LB_true, tolerance = 1e-10)
 })
@@ -277,7 +281,8 @@ test_that("computing the lower bound without features works", {
   ###########################################################
   # Compute the lower bound using the cpp function
   ###########################################################
-  alpha_LB <- run_MM_without_features(N, K, alpha, tau, adj)
+  alpha_LB <- run_MM_without_features(numOfVertices = N, numOfClasses = K,
+                                      alpha = alpha, tau = tau, network = adj)
   # Check if it works
   expect_equal(alpha_LB[[2]], LB_true, tolerance = 1e-10)
 })

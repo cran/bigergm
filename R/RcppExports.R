@@ -6,33 +6,20 @@ eigenvectors_sparse <- function(X, n_vec) {
 }
 
 #' Compute Yule's Phi-coefficient
+#' @description 
+#' This function computes Yule's Phi-coefficient between the true and estimated block membership (its definition can be found here \url{https://en.wikipedia.org/wiki/Phi_coefficient}).
+#' In this context, the Phi Coefficient is a measure of association between two group membership vectors. 
 #' @param z_star a true block membership
 #' @param z an estimated block membership
 #' @export
 #' @return Real value of Yule's Phi-coefficient between the true and estimated block membership is returned.
 #' @examples
 #' data(toyNet)
-#' compute_yule_coef(z_star = toyNet%v% "block",
+#' yule(z_star = toyNet%v% "block",
 #'                   z = sample(c(1:4),size = 200,replace = TRUE))
 #'                   
-compute_yule_coef <- function(z_star, z) {
-    .Call('_bigergm_compute_yule_coef', PACKAGE = 'bigergm', z_star, z)
-}
-
-get_sparse_feature_adjmat <- function(x) {
-    .Call('_bigergm_get_sparse_feature_adjmat', PACKAGE = 'bigergm', x)
-}
-
-get_sparse_feature_adjmat_from_string <- function(x) {
-    .Call('_bigergm_get_sparse_feature_adjmat_from_string', PACKAGE = 'bigergm', x)
-}
-
-get_matrix_for_denominator <- function(numOfVertices, list_feature_adjmat) {
-    .Call('_bigergm_get_matrix_for_denominator', PACKAGE = 'bigergm', numOfVertices, list_feature_adjmat)
-}
-
-get_elementwise_multiplied_matrices <- function(adjmat, list_feature_adjmat) {
-    .Call('_bigergm_get_elementwise_multiplied_matrices', PACKAGE = 'bigergm', adjmat, list_feature_adjmat)
+yule <- function(z_star, z) {
+    .Call('_bigergm_yule', PACKAGE = 'bigergm', z_star, z)
 }
 
 decimal_to_binary_vector <- function(decimal, vec_length) {
@@ -59,8 +46,12 @@ compute_quadratic_term <- function(numOfVertices, numOfClasses, alpha, tau, netw
     .Call('_bigergm_compute_quadratic_term', PACKAGE = 'bigergm', numOfVertices, numOfClasses, alpha, tau, network, LB, verbose)
 }
 
-run_MM_without_features <- function(numOfVertices, numOfClasses, alpha, tau, network, verbose = 0L) {
-    .Call('_bigergm_run_MM_without_features', PACKAGE = 'bigergm', numOfVertices, numOfClasses, alpha, tau, network, verbose)
+compute_quadratic_term_directed <- function(numOfVertices, numOfClasses, alpha, tau, network, LB, verbose = 0L) {
+    .Call('_bigergm_compute_quadratic_term_directed', PACKAGE = 'bigergm', numOfVertices, numOfClasses, alpha, tau, network, LB, verbose)
+}
+
+run_MM_without_features <- function(numOfVertices, numOfClasses, alpha, tau, network, verbose = 0L, directed = FALSE) {
+    .Call('_bigergm_run_MM_without_features', PACKAGE = 'bigergm', numOfVertices, numOfClasses, alpha, tau, network, verbose, directed)
 }
 
 compute_denominator_for_pi_d1x0 <- function(numOfVertices, numOfClasses, matrix_for_denominator, tau, verbose) {
@@ -75,15 +66,27 @@ compute_quadratic_term_with_features <- function(numOfVertices, numOfClasses, li
     .Call('_bigergm_compute_quadratic_term_with_features', PACKAGE = 'bigergm', numOfVertices, numOfClasses, list_multiplied_feature_adjmat, tau, LB, verbose)
 }
 
+compute_quadratic_term_with_features_directed <- function(numOfVertices, numOfClasses, list_multiplied_feature_adjmat, tau, LB, verbose = 0L) {
+    .Call('_bigergm_compute_quadratic_term_with_features_directed', PACKAGE = 'bigergm', numOfVertices, numOfClasses, list_multiplied_feature_adjmat, tau, LB, verbose)
+}
+
 compute_pi_with_features <- function(numOfVertices, numOfClasses, list_multiplied_feature_adjmat, tau) {
     .Call('_bigergm_compute_pi_with_features', PACKAGE = 'bigergm', numOfVertices, numOfClasses, list_multiplied_feature_adjmat, tau)
 }
 
-run_MM_with_features <- function(numOfVertices, numOfClasses, alpha, list_multiplied_feature_adjmat, tau, verbose = 0L) {
-    .Call('_bigergm_run_MM_with_features', PACKAGE = 'bigergm', numOfVertices, numOfClasses, alpha, list_multiplied_feature_adjmat, tau, verbose)
+run_MM_with_features <- function(numOfVertices, numOfClasses, alpha, list_multiplied_feature_adjmat, tau, verbose = 0L, directed = FALSE) {
+    .Call('_bigergm_run_MM_with_features', PACKAGE = 'bigergm', numOfVertices, numOfClasses, alpha, list_multiplied_feature_adjmat, tau, verbose, directed)
 }
 
-simulate_between_network <- function(numOfVertices, list_feature_adjmat, coef_between, block_membership, directed) {
-    .Call('_bigergm_simulate_between_network', PACKAGE = 'bigergm', numOfVertices, list_feature_adjmat, coef_between, block_membership, directed)
+simulate_between_network <- function(numOfVertices, list_feature_adjmat, coef_between, block_membership, directed, seed) {
+    .Call('_bigergm_simulate_between_network', PACKAGE = 'bigergm', numOfVertices, list_feature_adjmat, coef_between, block_membership, directed, seed)
+}
+
+simulate_between_network_covariates <- function(numOfVertices, coef_between, list_feature_adjmat, block_membership, directed, seed) {
+    .Call('_bigergm_simulate_between_network_covariates', PACKAGE = 'bigergm', numOfVertices, coef_between, list_feature_adjmat, block_membership, directed, seed)
+}
+
+simulate_between_network_no_covariates <- function(numOfVertices, coef_between, block_membership, directed, seed) {
+    .Call('_bigergm_simulate_between_network_no_covariates', PACKAGE = 'bigergm', numOfVertices, coef_between, block_membership, directed, seed)
 }
 

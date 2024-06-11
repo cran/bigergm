@@ -12,7 +12,7 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(openmp)]]
 
-const double minTau = 1e-6;
+const double minTau = 1e-4;
 double minPi =  1e-4;
 
 
@@ -189,6 +189,9 @@ arma::mat compute_pi(
     if (val < minPi) {
       val = minPi;
     }
+    if (!arma::is_finite(val)) {
+      val = minPi;
+    } 
   }
   return pi;
 }
@@ -217,6 +220,9 @@ arma::mat compute_quadratic_term(
     if (val < minPi) {
       val = minPi;
     }
+    if (!arma::is_finite(val)) {
+      val = minPi;
+    } 
   }
 
   if (verbose >= 5) {
@@ -228,6 +234,9 @@ arma::mat compute_quadratic_term(
     if (val < minPi) {
       val = minPi;
     }
+    if (!arma::is_finite(val)) {
+      val = minPi;
+    } 
   }
 
   if (verbose >= 5) {
@@ -283,6 +292,98 @@ arma::mat compute_quadratic_term(
   return A;
 }
 
+
+// [[Rcpp::export]]
+arma::mat  compute_quadratic_term_directed(
+    int numOfVertices,
+    int numOfClasses,
+    const arma::vec& alpha,
+    const arma::mat& tau,
+    const arma::sp_mat& network,
+    double& LB,
+    int verbose = 0) {
+  //Calculate pi's for reciprocity model
+  if (verbose >= 5) {
+    Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: calculating pi11";
+  }
+  arma::mat sumTaus = compute_sumTaus(numOfVertices, numOfClasses, tau);
+  arma::mat pi11 = (tau.t() * network * tau) / sumTaus;
+  // Remove extremely small elements in the denominator
+  for (auto& val : pi11) {
+    if (val < minPi) {
+      val = minPi;
+    }
+    if (!arma::is_finite(val)) {
+      val = minPi;
+    } 
+  }
+  
+  if (verbose >= 5) {
+    Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: calculating pi00";
+  }
+  arma::mat pi00 = 1 - pi11;
+  // Remove extremely small elements in the denominator
+  for (auto& val : pi00) {
+    if (val < minPi) {
+      val = minPi;
+    }
+    if (!arma::is_finite(val)) {
+      val = minPi;
+    } 
+  }
+  
+  if (verbose >= 5) {
+    Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: calculating logPi00";
+  }
+  arma::mat logPi00 = arma::log( pi00);
+  // Calculate the quadratic coefficients
+  // Compute the norm term, i.e. \pi_kl^0
+  if (verbose >= 5) {
+    Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: calculating tauL";
+  }
+  arma::rowvec tauL = sumDoubleMatrixByRow(tau);
+  
+  // When D_ij = 0
+  if (verbose >= 5) {
+    Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: calculating A";
+  }
+  arma::mat tau_nought = -(tau.each_row() - tauL);
+  arma::mat A = ((logPi00 + logPi00.t()) * (tau_nought.t())).t();
+  LB += accu((tau.t() * tau_nought) % logPi00);
+  // When D_ij = 1
+  if (verbose >= 5) {
+    Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: calculating logPi11";
+  }
+  arma::mat logPi11 = arma::log(pi11/pi00);
+  
+  // If the matrix is symmetric, only need to iterate over the positive values,
+  // because the condition if (network(i,j) == 1 && network(j,i) == 1) will always be met.
+  if (verbose >= 5) {
+    Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: updating A";
+  }
+  A += (logPi11.t() * tau.t() * network).t();
+  A += (logPi11 * tau.t() * network.t()).t();
+  
+  
+  LB += accu(( tau.t() * network * tau) % logPi11);
+
+  if (verbose >= 5) {
+    Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: subtract from A";
+  }
+  // Finalize by subtracting half of from 1 dividing tau_{ik}
+  for (int i = 0; i < numOfVertices; i++) {
+    for (int k = 0; k < numOfClasses; k++) {
+      // In theory, A(i, k) must be negative or 0.
+      if (A(i, k) > 0) { // In reality, A(i, k) can be greater than 0 because of numerical precision.
+        A(i, k) = 0;     // Therefore, we cut it off to 0 in this case
+      }
+      A(i, k) = 1 - A(i, k) / 2;
+      A(i, k) /= tau(i, k);
+    }
+  }
+  return A;
+}
+
 // A wrapper function to implement the MM algorithm without features
 // [[Rcpp::export]]
 Rcpp::List run_MM_without_features(
@@ -291,7 +392,8 @@ Rcpp::List run_MM_without_features(
     const arma::vec& alpha,
     arma::mat& tau,
     const arma::sp_mat& network,
-    int verbose = 0) {
+    int verbose = 0, 
+    bool directed = false) {
 
   // Lower bound
   double LB = 0;
@@ -299,8 +401,13 @@ Rcpp::List run_MM_without_features(
   if (verbose >= 5) {
     Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: compute_quadratic_term";
   }
-  arma::mat A = compute_quadratic_term(numOfVertices, numOfClasses, alpha, tau, network, LB, verbose);
-
+  arma::mat A;
+  if(directed){
+    A = compute_quadratic_term_directed(numOfVertices, numOfClasses, alpha, tau, network, LB, verbose);
+  } else {
+    A = compute_quadratic_term(numOfVertices, numOfClasses, alpha, tau, network, LB, verbose);
+  }
+  
   // Compute linear term
   if (verbose >= 5) {
     Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: compute_linear_term";
@@ -315,8 +422,8 @@ Rcpp::List run_MM_without_features(
   if (verbose >= 5) {
     Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: normalizeTau";
   }
-  normalizeTau(tau, minTau);
 
+  normalizeTau(tau, minTau);
   if (verbose >= 5) {
     Rcpp::Rcout  << "runFixedPointEstimationEStepMM_sparse: returning";
   }
@@ -439,6 +546,9 @@ arma::mat compute_pi_d1x0(
     if (val < minPi) {
       val = minPi;
       }
+    if (!arma::is_finite(val)) {
+      val = minPi;
+    } 
     }
   // Return the output
   return pi_d1x0;
@@ -470,6 +580,9 @@ arma::mat compute_quadratic_term_with_features(
     if (val < minPi) {
       val = minPi;
     }
+    if (!arma::is_finite(val)) {
+      val = minPi;
+    } 
   }
 
   // When D_ij = 0 and X_ij = 0
@@ -553,6 +666,9 @@ arma::mat compute_quadratic_term_with_features(
       if (val < minPi) {
         val = minPi;
       }
+      if (!arma::is_finite(val)) {
+        val = minPi;
+      } 
     }
     // Compute pi for D_ij = 0
     if (verbose >= 5) {
@@ -567,6 +683,9 @@ arma::mat compute_quadratic_term_with_features(
       if (val < minPi) {
         val = minPi;
       }
+      if (!arma::is_finite(val)) {
+        val = minPi;
+      } 
     }
 
     // Second, using the computed pis above, update the quadratic term
@@ -627,6 +746,203 @@ arma::mat compute_quadratic_term_with_features(
   return A;
 }
 
+// [[Rcpp::export]]
+arma::mat compute_quadratic_term_with_features_directed(
+    int numOfVertices,
+    int numOfClasses,
+    const Rcpp::List& list_multiplied_feature_adjmat,
+    const arma::mat& tau,
+    double& LB,
+    int verbose = 0)
+{
+  if (verbose >= 5) {
+    auto time = std::chrono::system_clock::now();
+    std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+    Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: started computing the quadratic coeffcients." << "\n";
+  }
+  
+  // Calculate pi_d1x0
+  arma::mat pi_d1x0 = compute_pi_d1x0(numOfVertices, numOfClasses, list_multiplied_feature_adjmat, tau, verbose);
+  
+  // Compute pi_d0x0
+  arma::mat pi_d0x0 = 1 - pi_d1x0;
+  // Remove extremely small elements in pi_d0x0
+  for (auto& val : pi_d0x0) {
+    if (val < minPi) {
+      val = minPi;
+    }
+    if (!arma::is_finite(val)) {
+      val = minPi;
+    } 
+  }
+  
+  // When D_ij = 0 and X_ij = 0
+  arma::mat logPi_d0x0 = arma::log(pi_d0x0);
+  arma::rowvec tauL = sumDoubleMatrixByRow(tau);
+  if (verbose >= 5) {
+    auto time = std::chrono::system_clock::now();
+    std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+    Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing the baseline quadratic coeffcient." << "\n";
+  }
+  
+  arma::mat tau_nought = -(tau.each_row() - tauL);
+  arma::mat A = ((logPi_d0x0.t() + logPi_d0x0) * (tau_nought.t())).t();
+  if (verbose >= 5) {
+    auto time = std::chrono::system_clock::now();
+    std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+    Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing the lower bound for D_ij = 0 and X_ij = 0." << "\n";
+  }
+  LB += accu((tau.t() * tau_nought) % logPi_d0x0);
+  
+  // When D_ij = 1 and X_ij = 0
+  if (verbose >= 5) {
+    auto time = std::chrono::system_clock::now();
+    std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+    Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing the quadratic coeffcient for D_ij = 1 and X_ij = 0." << "\n";
+  }
+  arma::mat logPi_d1x0 = arma::log(pi_d1x0/pi_d0x0);
+  // Here we get all entries where g[ij] = 1 and all covariates = 0
+  arma::sp_mat S0 = list_multiplied_feature_adjmat[1];
+  arma::mat tau_one = tau.t() * S0; 
+  A += S0*tau*logPi_d1x0.t();
+  A += S0.t()*tau*logPi_d1x0;
+  
+  if (verbose >= 5) {
+    auto time = std::chrono::system_clock::now();
+    std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+    Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing the lower bound for D_ij = 1 and X_ij = 0." << "\n";
+  }
+  LB += accu((tau_one * tau) % logPi_d1x0);
+  // Update A for the other combinations of features
+  double length_list = list_multiplied_feature_adjmat.length();
+  int numOfSteps = length_list/2;
+  
+  for (int s = 1; s < numOfSteps; s++) {
+    // First, compute the conditional probability for D_ij = 0 and D_ij = 1 given X_ij = x
+    // Create indices to extract appropriate multiplied matrices
+    int index = 2 * s;
+    // Get the multiplied matrix for D = 0
+    arma::sp_mat D0X = list_multiplied_feature_adjmat[index];
+    // arma::sp_mat D0X_t = list_multiplied_feature_adjmat_t[index];
+    // Get the multiplied matrix for D = 1
+    arma::sp_mat D1X = list_multiplied_feature_adjmat[index+1];
+    // arma::sp_mat D1X_t = list_multiplied_feature_adjmat_t[index+1];
+    // Compute the denominator for pi
+    if (verbose >= 5) {
+      auto time = std::chrono::system_clock::now();
+      std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+      Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing D0X + D1X in loop " << s << " of " << numOfSteps<< "\n";
+    }
+    arma::sp_mat X = D0X + D1X;
+    if (verbose >= 5) {
+      auto time = std::chrono::system_clock::now();
+      std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+      Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing pi_denom in loop " << s << " of " << numOfSteps << "\n";
+    }
+    arma::mat pi_denom = tau.t() * X * tau;
+    // Compute the numerator for D_ij = 1
+    if (verbose >= 5) {
+      auto time = std::chrono::system_clock::now();
+      std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+      Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing the numerator for D_ij = 1 in loop " << s << " of " << numOfSteps << "\n";
+    }
+    arma::mat pi_num = tau.t() * D1X * tau;
+    // Compute pi for D_ij = 1
+    if (verbose >= 5) {
+      auto time = std::chrono::system_clock::now();
+      std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+      Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing pi for D_ij = 1 in loop " << s << " of " << numOfSteps << "\n";
+    }
+    arma::mat pi_d1 = pi_num/pi_denom;
+
+    // Remove extremely small elements in pi_d1
+    for (auto& val : pi_d1) {
+      if (val < minPi) {
+        val = minPi;
+      }
+      if (!arma::is_finite(val)) {
+        val = minPi;
+      } 
+    }
+    // Compute pi for D_ij = 0
+    if (verbose >= 5) {
+      auto time = std::chrono::system_clock::now();
+      std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+      Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing pi for D_ij = 0 in loop " << s << " of " << numOfSteps << "\n";
+    }
+    arma::mat pi_d0 = 1 - pi_d1;
+    // Remove extremely small elements in pi_d0
+    // Remove extremely small elements in the denominator
+    for (auto& val : pi_d0) {
+      if (val < minPi) {
+        val = minPi;
+      }
+      if (!arma::is_finite(val)) {
+        val = minPi;
+      } 
+    }
+    
+    // Second, using the computed pis above, update the quadratic term
+    // When D_ij = 0
+    if (verbose >= 5) {
+      auto time = std::chrono::system_clock::now();
+      std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+      Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: updating A for D_ij = 0 in loop " << s << " of " << numOfSteps << "\n";
+    }
+    arma::mat logPi_d0 = arma::log(pi_d0/pi_d0x0);
+    
+    A += D0X*tau*logPi_d0.t();
+    A += D0X.t()*tau*logPi_d0;
+    
+    if (verbose >= 5) {
+      auto time = std::chrono::system_clock::now();
+      std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+      Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing the lower bound D_ij = 0 in loop " << s << " of " << numOfSteps << "\n";
+    }
+    arma::mat tauX0tau = pi_denom - pi_num;
+    LB += accu(tauX0tau % logPi_d0);
+    
+    // When D_ij = 1
+    if (verbose >= 5) {
+      auto time = std::chrono::system_clock::now();
+      std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+      Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: updating A for D_ij = 1 in loop " << s << " of " << numOfSteps << "\n";
+    }
+    arma::mat logPi_d1 = arma::log(pi_d1/pi_d0x0);
+    A += D1X*tau*logPi_d1.t();
+    A += D1X.t()*tau*logPi_d1;
+    
+    if (verbose >= 5) {
+      auto time = std::chrono::system_clock::now();
+      std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+      Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: computing the lower bound D_ij = 1 in loop " << s << " of " << numOfSteps << "\n";
+    }
+    LB += accu(pi_num % logPi_d1);
+  }
+  // Finalize by subtracting half of from 1 dividing tau_{ik}
+  if (verbose >= 5) {
+    auto time = std::chrono::system_clock::now();
+    std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+    Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: Finalizing A."<< "\n";
+  }
+  for (auto& val : A) {
+    // In reality, A(i, k) can be greater than 0 because of numerical precision.
+    // Therefore, we cut it off to 0 in this case
+    if (val > 0) {
+      val = 0;
+    }
+    val = 1 - val/2;
+  }
+  A /= tau;
+  
+  // Return the quadratic term
+  if (verbose >= 5) {
+    auto time = std::chrono::system_clock::now();
+    std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
+    Rcpp::Rcout << std::ctime(&timestamp) << "compute_quadratic_term_with_features: Finished."<< "\n";
+  }
+  return A;
+}
 
 // Compute \pi matrix using features
 // [[Rcpp::export]]
@@ -689,16 +1005,15 @@ Rcpp::List compute_pi_with_features(
     // Return the output
     return list_pi;
 }
-
 // A wrapper function to implement the MM algorithm using features
 // [[Rcpp::export]]
-Rcpp::List run_MM_with_features
-  (int numOfVertices,
+Rcpp::List run_MM_with_features(int numOfVertices,
    int numOfClasses,
    const arma::vec& alpha,
    const Rcpp::List& list_multiplied_feature_adjmat,
    arma::mat& tau,
-   int verbose = 0) {
+   int verbose = 0, 
+   bool directed = false) {
   // Initialize lower bound
   double LB = 0;
 
@@ -708,14 +1023,25 @@ Rcpp::List run_MM_with_features
     std::time_t timestamp = std::chrono::system_clock::to_time_t(time);
     Rcpp::Rcout << std::ctime(&timestamp) << "runFixedPointEstimationEStepMM_sparse: compute quadratic term with features."<< "\n";
   }
-  arma::mat A = compute_quadratic_term_with_features
+  arma::mat A;
+  
+  if(directed) {
+    A = compute_quadratic_term_with_features_directed(numOfVertices,
+     numOfClasses,
+     list_multiplied_feature_adjmat,
+     tau,
+     LB,
+     verbose);
+  } else {
+    A = compute_quadratic_term_with_features
     (numOfVertices,
      numOfClasses,
      list_multiplied_feature_adjmat,
      tau,
      LB,
      verbose);
-
+  }
+  
   // Compute linear term
   if (verbose >= 5) {
     auto time = std::chrono::system_clock::now();
@@ -750,3 +1076,4 @@ Rcpp::List run_MM_with_features
   output[1] = LB;
   return output;
 }
+

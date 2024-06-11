@@ -103,7 +103,7 @@ test_that("computing pi_d1x0 works", {
   expect_equal(denom_for_pi0_true, denom_for_pi0_naive, check.attributes = FALSE, tolerance = 1e-10)
 
   # Compute the denominator using the c++ function
-  denom <- get_matrix_for_denominator(N, list(S, V, W))
+  denom <- get_matrix_for_denominator_R(N, list(S, V, W))
   denom_for_pi0 <- compute_denominator_for_pi_d1x0(N, K, denom, tau, verbose = 0)
 
   # Check if the computed matrix is correct.
@@ -136,8 +136,10 @@ test_that("computing pi_d1x0 works", {
   }
 
   # Compute pi0 using the Rcpp function
-  list_multiplied_adjmat <- get_elementwise_multiplied_matrices(adj, list(S, V, W))
+  list_multiplied_adjmat <- get_elementwise_multiplied_matrices_R(adj, list(S, V, W))
   list_multiplied_adjmat[[1]] <- denom
+  list_multiplied_adjmat <- lapply(list_multiplied_adjmat, FUN = function(x) x*1)
+  
   pi1 <- compute_pi_d1x0(N, K, list_multiplied_adjmat, tau, verbose = 0)
 
   # Check if the computed conditional probability is correct.

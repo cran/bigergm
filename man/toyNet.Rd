@@ -12,7 +12,7 @@ A \code{statnet}'s network class object. It has three nodal features.
 \item{y}{a covariate. It has 10 labels.}
 ...
 }
-\code{x} and \code{y} are not variables with any particular meaning.
+\code{1} and \code{2} are not variables with any particular meaning.
 }
 \usage{
 toyNet

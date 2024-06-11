@@ -3,7 +3,7 @@ test_that("creating a feature adjacency matrix works", {
 
   get_sparse_feature_adjacency_matrix <- function(feature) {
     S <- Matrix::sparseMatrix(i = {}, j = {}, dims = c(length(feature), length(feature)))
-    S <- as(S, "dgCMatrix")
+    S <- as(S, "dMatrix")
     for (i in 1:length(feature)) {
       for (j in 1:length(feature)) {
         if (i != j) {
@@ -47,17 +47,17 @@ test_that("creating a feature adjacency matrix works", {
 
   # True list of feature adjacency metrices
   list_adjmat_true <- list(
-    get_sparse_feature_adjacency_matrix(x),
-    get_sparse_feature_adjacency_matrix(y),
-    get_sparse_feature_adjacency_matrix(z),
-    get_sparse_feature_adjacency_matrix(w)
+    get_sparse_feature_adjacency_matrix(x)*1,
+    get_sparse_feature_adjacency_matrix(y)*1,
+    get_sparse_feature_adjacency_matrix(z)*1,
+    get_sparse_feature_adjacency_matrix(w)*1
   )
 
   # Create a list
-  list_adjmat <- get_list_sparse_feature_adjmat(network = g, formula = form)
+  list_adjmat <- get_features(network = g, formula = form)
 
   # Check if it works
   for (i in 1:4) {
-    expect_equal(list_adjmat[[i]], list_adjmat_true[[i]], check.attributes = FALSE, tolerance = 1e-10)
+    expect_equal(list_adjmat$list_sparse_feature_adjmat[[i]]*1, list_adjmat_true[[i]], check.attributes = FALSE, tolerance = 1e-10)
   }
 })

@@ -23,61 +23,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// compute_yule_coef
-double compute_yule_coef(const arma::vec& z_star, const arma::vec& z);
-RcppExport SEXP _bigergm_compute_yule_coef(SEXP z_starSEXP, SEXP zSEXP) {
+// yule
+double yule(const arma::vec& z_star, const arma::vec& z);
+RcppExport SEXP _bigergm_yule(SEXP z_starSEXP, SEXP zSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type z_star(z_starSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type z(zSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_yule_coef(z_star, z));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_sparse_feature_adjmat
-arma::sp_mat get_sparse_feature_adjmat(const arma::vec& x);
-RcppExport SEXP _bigergm_get_sparse_feature_adjmat(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_sparse_feature_adjmat(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_sparse_feature_adjmat_from_string
-arma::sp_mat get_sparse_feature_adjmat_from_string(const Rcpp::StringVector& x);
-RcppExport SEXP _bigergm_get_sparse_feature_adjmat_from_string(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::StringVector& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_sparse_feature_adjmat_from_string(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_matrix_for_denominator
-arma::sp_mat get_matrix_for_denominator(int numOfVertices, const Rcpp::List& list_feature_adjmat);
-RcppExport SEXP _bigergm_get_matrix_for_denominator(SEXP numOfVerticesSEXP, SEXP list_feature_adjmatSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type numOfVertices(numOfVerticesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type list_feature_adjmat(list_feature_adjmatSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_matrix_for_denominator(numOfVertices, list_feature_adjmat));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_elementwise_multiplied_matrices
-Rcpp::List get_elementwise_multiplied_matrices(const arma::sp_mat& adjmat, const Rcpp::List& list_feature_adjmat);
-RcppExport SEXP _bigergm_get_elementwise_multiplied_matrices(SEXP adjmatSEXP, SEXP list_feature_adjmatSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::sp_mat& >::type adjmat(adjmatSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type list_feature_adjmat(list_feature_adjmatSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_elementwise_multiplied_matrices(adjmat, list_feature_adjmat));
+    rcpp_result_gen = Rcpp::wrap(yule(z_star, z));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -168,9 +122,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// compute_quadratic_term_directed
+arma::mat compute_quadratic_term_directed(int numOfVertices, int numOfClasses, const arma::vec& alpha, const arma::mat& tau, const arma::sp_mat& network, double& LB, int verbose);
+RcppExport SEXP _bigergm_compute_quadratic_term_directed(SEXP numOfVerticesSEXP, SEXP numOfClassesSEXP, SEXP alphaSEXP, SEXP tauSEXP, SEXP networkSEXP, SEXP LBSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type numOfVertices(numOfVerticesSEXP);
+    Rcpp::traits::input_parameter< int >::type numOfClasses(numOfClassesSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type tau(tauSEXP);
+    Rcpp::traits::input_parameter< const arma::sp_mat& >::type network(networkSEXP);
+    Rcpp::traits::input_parameter< double& >::type LB(LBSEXP);
+    Rcpp::traits::input_parameter< int >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_quadratic_term_directed(numOfVertices, numOfClasses, alpha, tau, network, LB, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // run_MM_without_features
-Rcpp::List run_MM_without_features(int numOfVertices, int numOfClasses, const arma::vec& alpha, arma::mat& tau, const arma::sp_mat& network, int verbose);
-RcppExport SEXP _bigergm_run_MM_without_features(SEXP numOfVerticesSEXP, SEXP numOfClassesSEXP, SEXP alphaSEXP, SEXP tauSEXP, SEXP networkSEXP, SEXP verboseSEXP) {
+Rcpp::List run_MM_without_features(int numOfVertices, int numOfClasses, const arma::vec& alpha, arma::mat& tau, const arma::sp_mat& network, int verbose, bool directed);
+RcppExport SEXP _bigergm_run_MM_without_features(SEXP numOfVerticesSEXP, SEXP numOfClassesSEXP, SEXP alphaSEXP, SEXP tauSEXP, SEXP networkSEXP, SEXP verboseSEXP, SEXP directedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -180,7 +151,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat& >::type tau(tauSEXP);
     Rcpp::traits::input_parameter< const arma::sp_mat& >::type network(networkSEXP);
     Rcpp::traits::input_parameter< int >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(run_MM_without_features(numOfVertices, numOfClasses, alpha, tau, network, verbose));
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_MM_without_features(numOfVertices, numOfClasses, alpha, tau, network, verbose, directed));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -230,6 +202,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// compute_quadratic_term_with_features_directed
+arma::mat compute_quadratic_term_with_features_directed(int numOfVertices, int numOfClasses, const Rcpp::List& list_multiplied_feature_adjmat, const arma::mat& tau, double& LB, int verbose);
+RcppExport SEXP _bigergm_compute_quadratic_term_with_features_directed(SEXP numOfVerticesSEXP, SEXP numOfClassesSEXP, SEXP list_multiplied_feature_adjmatSEXP, SEXP tauSEXP, SEXP LBSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type numOfVertices(numOfVerticesSEXP);
+    Rcpp::traits::input_parameter< int >::type numOfClasses(numOfClassesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type list_multiplied_feature_adjmat(list_multiplied_feature_adjmatSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type tau(tauSEXP);
+    Rcpp::traits::input_parameter< double& >::type LB(LBSEXP);
+    Rcpp::traits::input_parameter< int >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_quadratic_term_with_features_directed(numOfVertices, numOfClasses, list_multiplied_feature_adjmat, tau, LB, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // compute_pi_with_features
 Rcpp::List compute_pi_with_features(int numOfVertices, int numOfClasses, const Rcpp::List& list_multiplied_feature_adjmat, const arma::mat& tau);
 RcppExport SEXP _bigergm_compute_pi_with_features(SEXP numOfVerticesSEXP, SEXP numOfClassesSEXP, SEXP list_multiplied_feature_adjmatSEXP, SEXP tauSEXP) {
@@ -245,8 +233,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // run_MM_with_features
-Rcpp::List run_MM_with_features(int numOfVertices, int numOfClasses, const arma::vec& alpha, const Rcpp::List& list_multiplied_feature_adjmat, arma::mat& tau, int verbose);
-RcppExport SEXP _bigergm_run_MM_with_features(SEXP numOfVerticesSEXP, SEXP numOfClassesSEXP, SEXP alphaSEXP, SEXP list_multiplied_feature_adjmatSEXP, SEXP tauSEXP, SEXP verboseSEXP) {
+Rcpp::List run_MM_with_features(int numOfVertices, int numOfClasses, const arma::vec& alpha, const Rcpp::List& list_multiplied_feature_adjmat, arma::mat& tau, int verbose, bool directed);
+RcppExport SEXP _bigergm_run_MM_with_features(SEXP numOfVerticesSEXP, SEXP numOfClassesSEXP, SEXP alphaSEXP, SEXP list_multiplied_feature_adjmatSEXP, SEXP tauSEXP, SEXP verboseSEXP, SEXP directedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -256,13 +244,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::List& >::type list_multiplied_feature_adjmat(list_multiplied_feature_adjmatSEXP);
     Rcpp::traits::input_parameter< arma::mat& >::type tau(tauSEXP);
     Rcpp::traits::input_parameter< int >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(run_MM_with_features(numOfVertices, numOfClasses, alpha, list_multiplied_feature_adjmat, tau, verbose));
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_MM_with_features(numOfVertices, numOfClasses, alpha, list_multiplied_feature_adjmat, tau, verbose, directed));
     return rcpp_result_gen;
 END_RCPP
 }
 // simulate_between_network
-arma::sp_mat simulate_between_network(int numOfVertices, const Rcpp::List& list_feature_adjmat, const arma::vec& coef_between, const arma::vec& block_membership, bool directed);
-RcppExport SEXP _bigergm_simulate_between_network(SEXP numOfVerticesSEXP, SEXP list_feature_adjmatSEXP, SEXP coef_betweenSEXP, SEXP block_membershipSEXP, SEXP directedSEXP) {
+arma::sp_mat simulate_between_network(int numOfVertices, const Rcpp::List& list_feature_adjmat, const arma::vec& coef_between, const arma::vec& block_membership, bool directed, int& seed);
+RcppExport SEXP _bigergm_simulate_between_network(SEXP numOfVerticesSEXP, SEXP list_feature_adjmatSEXP, SEXP coef_betweenSEXP, SEXP block_membershipSEXP, SEXP directedSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -271,31 +260,63 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type coef_between(coef_betweenSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type block_membership(block_membershipSEXP);
     Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_between_network(numOfVertices, list_feature_adjmat, coef_between, block_membership, directed));
+    Rcpp::traits::input_parameter< int& >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_between_network(numOfVertices, list_feature_adjmat, coef_between, block_membership, directed, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_between_network_covariates
+arma::sp_mat simulate_between_network_covariates(const int numOfVertices, const Rcpp::List& coef_between, const Rcpp::List& list_feature_adjmat, const arma::vec& block_membership, bool directed, int& seed);
+RcppExport SEXP _bigergm_simulate_between_network_covariates(SEXP numOfVerticesSEXP, SEXP coef_betweenSEXP, SEXP list_feature_adjmatSEXP, SEXP block_membershipSEXP, SEXP directedSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int >::type numOfVertices(numOfVerticesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type coef_between(coef_betweenSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type list_feature_adjmat(list_feature_adjmatSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type block_membership(block_membershipSEXP);
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
+    Rcpp::traits::input_parameter< int& >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_between_network_covariates(numOfVertices, coef_between, list_feature_adjmat, block_membership, directed, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_between_network_no_covariates
+arma::sp_mat simulate_between_network_no_covariates(const int numOfVertices, const arma::sp_mat& coef_between, const arma::vec& block_membership, bool directed, int& seed);
+RcppExport SEXP _bigergm_simulate_between_network_no_covariates(SEXP numOfVerticesSEXP, SEXP coef_betweenSEXP, SEXP block_membershipSEXP, SEXP directedSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int >::type numOfVertices(numOfVerticesSEXP);
+    Rcpp::traits::input_parameter< const arma::sp_mat& >::type coef_between(coef_betweenSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type block_membership(block_membershipSEXP);
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
+    Rcpp::traits::input_parameter< int& >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_between_network_no_covariates(numOfVertices, coef_between, block_membership, directed, seed));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bigergm_eigenvectors_sparse", (DL_FUNC) &_bigergm_eigenvectors_sparse, 2},
-    {"_bigergm_compute_yule_coef", (DL_FUNC) &_bigergm_compute_yule_coef, 2},
-    {"_bigergm_get_sparse_feature_adjmat", (DL_FUNC) &_bigergm_get_sparse_feature_adjmat, 1},
-    {"_bigergm_get_sparse_feature_adjmat_from_string", (DL_FUNC) &_bigergm_get_sparse_feature_adjmat_from_string, 1},
-    {"_bigergm_get_matrix_for_denominator", (DL_FUNC) &_bigergm_get_matrix_for_denominator, 2},
-    {"_bigergm_get_elementwise_multiplied_matrices", (DL_FUNC) &_bigergm_get_elementwise_multiplied_matrices, 2},
+    {"_bigergm_yule", (DL_FUNC) &_bigergm_yule, 2},
     {"_bigergm_decimal_to_binary_vector", (DL_FUNC) &_bigergm_decimal_to_binary_vector, 2},
     {"_bigergm_compute_sumTaus", (DL_FUNC) &_bigergm_compute_sumTaus, 4},
     {"_bigergm_compute_quadratic_term_naive", (DL_FUNC) &_bigergm_compute_quadratic_term_naive, 5},
     {"_bigergm_compute_linear_term", (DL_FUNC) &_bigergm_compute_linear_term, 5},
     {"_bigergm_compute_pi", (DL_FUNC) &_bigergm_compute_pi, 4},
     {"_bigergm_compute_quadratic_term", (DL_FUNC) &_bigergm_compute_quadratic_term, 7},
-    {"_bigergm_run_MM_without_features", (DL_FUNC) &_bigergm_run_MM_without_features, 6},
+    {"_bigergm_compute_quadratic_term_directed", (DL_FUNC) &_bigergm_compute_quadratic_term_directed, 7},
+    {"_bigergm_run_MM_without_features", (DL_FUNC) &_bigergm_run_MM_without_features, 7},
     {"_bigergm_compute_denominator_for_pi_d1x0", (DL_FUNC) &_bigergm_compute_denominator_for_pi_d1x0, 5},
     {"_bigergm_compute_pi_d1x0", (DL_FUNC) &_bigergm_compute_pi_d1x0, 5},
     {"_bigergm_compute_quadratic_term_with_features", (DL_FUNC) &_bigergm_compute_quadratic_term_with_features, 6},
+    {"_bigergm_compute_quadratic_term_with_features_directed", (DL_FUNC) &_bigergm_compute_quadratic_term_with_features_directed, 6},
     {"_bigergm_compute_pi_with_features", (DL_FUNC) &_bigergm_compute_pi_with_features, 4},
-    {"_bigergm_run_MM_with_features", (DL_FUNC) &_bigergm_run_MM_with_features, 6},
-    {"_bigergm_simulate_between_network", (DL_FUNC) &_bigergm_simulate_between_network, 5},
+    {"_bigergm_run_MM_with_features", (DL_FUNC) &_bigergm_run_MM_with_features, 7},
+    {"_bigergm_simulate_between_network", (DL_FUNC) &_bigergm_simulate_between_network, 6},
+    {"_bigergm_simulate_between_network_covariates", (DL_FUNC) &_bigergm_simulate_between_network_covariates, 6},
+    {"_bigergm_simulate_between_network_no_covariates", (DL_FUNC) &_bigergm_simulate_between_network_no_covariates, 5},
     {NULL, NULL, 0}
 };
 

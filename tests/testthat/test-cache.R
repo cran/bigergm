@@ -20,18 +20,18 @@ simulate_network <- function(){
     x = x,
     y = y
   )
-
-  simulate_hergm(
-      formula_for_simulation = formula,
-      data_for_simulation = df,
-      colname_vertex_id = "id",
-      colname_block_membership = "memb",
-      coef_within_block = list_within_params,
-      coef_between_block = list_between_params,
-      ergm_control = ergm::control.simulate.formula(MCMC.burnin = 1000000, MCMC.interval = 1000),
+  g <- network::network.initialize(n = N, directed = FALSE)
+  network::set.vertex.attribute(g, "block", df$memb)
+  network::set.vertex.attribute(g, "x", df$x)
+  network::set.vertex.attribute(g, "y", df$y)
+  
+  simulate_bigergm(
+      formula = formula,
+      coef_within = list_within_params,
+      coef_between = list_between_params,
+      control_within = ergm::control.simulate.formula(MCMC.burnin = 1000000, MCMC.interval = 1000),
       seed = 1,
-      n_sim = 1,
-      directed = FALSE,
+      nsim = 1,
       output = "network"
     )
 }
@@ -59,11 +59,11 @@ test_that('Estimation with a disk cache stores data in the correct directory', {
   check_files(dir, 0)
 
   # Perform estimation
-  bigergm::hergm(
+  bigergm::bigergm(
     object = g_1 ~ edges + nodematch("x"),
-    n_clusters =  3,
+    n_blocks =  3,
     n_MM_step_max = 3,
-    initialization_method = 1,
+    initialization = "infomap",
     clustering_with_features = TRUE,
     verbose=2,
     cache = cachem::cache_disk(dir)
@@ -72,10 +72,10 @@ test_that('Estimation with a disk cache stores data in the correct directory', {
   # The estimation should have stored one RDS object in the cache directory.
   check_files(dir, 1)
 
-  bigergm::hergm(
+  bigergm::bigergm(
     object = g_1 ~ edges + nodematch("x"),
-    n_clusters = 3,n_MM_step_max = 3,
-    initialization_method = 1,
+    n_blocks = 3,n_MM_step_max = 3,
+    initialization = "infomap",
     clustering_with_features = TRUE,
     verbose=2,
     cache = cachem::cache_disk(dir)
@@ -89,10 +89,10 @@ test_that('Estimation with a disk cache stores data in the correct directory', {
   g_2 <- simulate_network()
 
   # Perform estimation on the new network.
-  bigergm::hergm(
+  bigergm::bigergm(
     object = g_2 ~ edges + nodematch("x"),
-    n_clusters = 3,n_MM_step_max = 3,
-    initialization_method = 1,
+    n_blocks = 3,n_MM_step_max = 3,
+    initialization = "infomap",
     clustering_with_features = TRUE,
     verbose=2,
     cache = cachem::cache_disk(dir)

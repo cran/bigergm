@@ -31,7 +31,11 @@ test_that("computing pi with features works", {
       }
     }
   }
-
+  
+  zeroes <- which(x == 0)
+  ones <- which(x == 1)
+  indicators <- rbind(t(combn(zeroes,2)), t(combn(ones,2)))
+  sparseMatrix(indicators[,1], indicators[,2], symmetric = TRUE)
   y <- as.integer(unlist(rbinom(size = 1,prob = 0.5,n = N)))
   V <- Matrix::sparseMatrix(i = {}, j = {}, dims = c(N, N))
   V <- as(V, "dgCMatrix")
@@ -87,7 +91,6 @@ test_that("computing pi with features works", {
         denom <- matrix(0, nrow = K, ncol = K)
         num <- matrix(0, nrow = K, ncol = K)
         index <- s + 2 * v + 4 * w + 1
-        print(index)
         for (k in 1:K) {
           for (l in 1:K) {
             for (i in 1:N) {
@@ -117,6 +120,9 @@ test_that("computing pi with features works", {
   }
 
   list_feature_adjmat <- list(S, V, W)
-  list_multiplied_feature_adjmat <- get_elementwise_multiplied_matrices(adj, list_feature_adjmat)
+  list_multiplied_feature_adjmat <- get_elementwise_multiplied_matrices_R(adj, list_feature_adjmat)
+  list_multiplied_feature_adjmat <- lapply(list_multiplied_feature_adjmat, function(x) {x*1})
+  list_pi <- compute_pi_with_features(N, K, list_multiplied_feature_adjmat, tau)
   expect_equal(compute_pi_with_features(N, K, list_multiplied_feature_adjmat, tau), list_pi, tolerance = 1e-10)
-})
+
+  })

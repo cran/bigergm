@@ -37,9 +37,8 @@ attr(edgelist, "directed") <- FALSE
 attr(edgelist, "bipartite") <- FALSE
 attr(edgelist, "loops") <- FALSE
 attr(edgelist, "class") <- c("edgelist", "matrix")
-
 g <- network::network(edgelist, matrix.type = "edgelist", directed = FALSE)
-
+g%v%"vertex.names" <- 1:length(g%v%"vertex.names")
 x1 <- as.integer(unlist(rbinom(size = 1,prob = 0.5,n = g$gal$n)))
 network::set.vertex.attribute(x = g, attrname = "x1", value = x1)
 
@@ -72,17 +71,28 @@ df_g <-
   dplyr::select(-"na")
 
 
+
 # Estimate the model
 formula <- g ~ edges + nodematch("x1") + triangle + kstar(2)
-est_between <- estimate_between_param(
+g %v% "block" <- z_memb
+
+est_between <- est_between(
   formula = formula,
   network = g,
-  block = z_memb
+  add_intercepts = FALSE
 )
+
+est_within <- est_within(
+  formula = g ~ edges + nodematch("x1"),
+  network = g, seed = 1,
+  method_within = "MPLE", 
+  add_intercepts = FALSE
+)
+
 
 test_that("estimating between-block parameters by logit works", {
   # Check if between-block connections are all zero.
-  g_logit <- est_between$network
+  g_logit <- g
   edgelist <- intergraph::asDF(g_logit)$edges
 
   true_edgelist <-
@@ -90,44 +100,27 @@ test_that("estimating between-block parameters by logit works", {
     dplyr::filter(same_block == 0 & connected == 1) %>%
     dplyr::select("tail", "head") %>%
     dplyr::arrange(tail, head)
-
-  # Does it work!!!?
-  expect_equal(edgelist$V1, true_edgelist$tail)
-  expect_equal(edgelist$V2, true_edgelist$head)
-
+  
   # Check if estimates for between-block parameters are the same.
   param_est <- stats::coef(est_between)
-  logit_true <- glm(
+  
+  logit_true_between <- glm(
     formula = connected ~ nodematch.x1,
-    data = df_g %>% dplyr::mutate(connected = ifelse(same_block == 1, 0, connected)),
+    data = df_g[df_g$same_block ==0,],
     family = "binomial"
   )
-
-  param_est_true <- stats::coef(logit_true)
-
+  logit_true_within <- glm(
+    formula = connected ~ nodematch.x1,
+    data = df_g[df_g$same_block ==1,],
+    family = "binomial"
+  )
+  
   # Does it work?
-  expect_equal(param_est, param_est_true, check.attributes = FALSE, tolerance = 1e-7)
-
-  # Check if within-block parameter estiamtion works
-  expect_error(estimate_within_params(
-    formula = formula,
-    network = g,
-    z_memb = z_memb,
-    parallel = FALSE,
-    verbose = 0,
-    initial_estimate = NULL,
-    seeds = NULL,
-    method_second_step = "MPLE"
-  ), NA)
-})
-
-test_that("estimating between-block parameters using a formula without externality terms works", {
-  # Check if within-block parameter estiamtion works
-  expect_error(
-    estimate_between_param(
-      formula = g ~ edges + nodematch("x1"),
-      network = g,
-      block = z_memb
-    ),
-    NA)
+  expect_equal(est_within$coefficients, 
+               logit_true_within$coefficients,
+               check.attributes = FALSE, tolerance = 1e-7)
+  expect_equal(est_between$coefficients, 
+               logit_true_between$coefficients, 
+               check.attributes = FALSE, tolerance = 1e-7)
+  
 })

@@ -9,7 +9,7 @@ test_that("computing Yule's phi-coefficient works", {
   z_star <- z1
 
   # Check if it equals one.
-  expect_equal(compute_yule_coef(z_star, z1), 1)
+  expect_equal(yule(z_star, z1), 1)
 
   # Another case
   z2 <- sample(1:K, size = N, replace = TRUE)
@@ -40,7 +40,7 @@ test_that("computing Yule's phi-coefficient works", {
   phi_naive <- (n00 * n11 - n01 * n10) / sqrt((n00 + n01) * (n10 + n11) * (n00 + n10) * (n01 + n11))
 
   # Check if it works
-  expect_equal(compute_yule_coef(z_star, z2), phi_naive, tolerance = 1e-10)
+  expect_equal(yule(z_star, z2), phi_naive, tolerance = 1e-10)
 })
 
 
@@ -56,9 +56,9 @@ test_that("Removing missing values works", {
   z1[1:4] <- NA
 
   # Check if it equals one.
-  compute_yule_coef(z_star, z1)
-  expect_silent(compute_yule_coef(z_star, z1))
+  yule(z_star, z1)
+  expect_silent(yule(z_star, z1))
 
   z_star[50:56] <- NA
-  expect_silent(compute_yule_coef(z_star, z1))
+  expect_silent(yule(z_star, z1))
 })

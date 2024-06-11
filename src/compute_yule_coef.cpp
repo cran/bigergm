@@ -2,17 +2,20 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 //' Compute Yule's Phi-coefficient
+//' @description 
+//' This function computes Yule's Phi-coefficient between the true and estimated block membership (its definition can be found here \url{https://en.wikipedia.org/wiki/Phi_coefficient}).
+//' In this context, the Phi Coefficient is a measure of association between two group membership vectors. 
 //' @param z_star a true block membership
 //' @param z an estimated block membership
 //' @export
 //' @return Real value of Yule's Phi-coefficient between the true and estimated block membership is returned.
 //' @examples
 //' data(toyNet)
-//' compute_yule_coef(z_star = toyNet%v% "block",
+//' yule(z_star = toyNet%v% "block",
 //'                   z = sample(c(1:4),size = 200,replace = TRUE))
 //'                   
 // [[Rcpp::export]]
-double compute_yule_coef(
+double yule(
     const arma::vec& z_star,
     const arma::vec& z) {
 
