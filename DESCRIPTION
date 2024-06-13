@@ -1,13 +1,13 @@
 Package: bigergm
 Title: Fit, Simulate, and Diagnose Hierarchical Exponential-Family
         Models for Big Networks
-Version: 1.2.0
+Version: 1.2.1
 Authors@R: c(
+    person(given = "Cornelius", family = "Fritz", role = c("aut", "cre"), email = "corneliusfritz2010@gmail.com"), 
     person(given = "Shota", family = "Komatsu", role = c("aut"), email = "shota.komatsu@sansan.com"),
     person(given = "Juan Nelson", family = "Martínez Dahbura", role = c("aut"), email = "martinez.dahbura@sansan.com"),
     person(given = "Takanori", family = "Nishida", role = c("aut"), email = "nishida@sansan.com"),
     person(given = "Angelo", family = "Mele", role = c("aut"), email = "angelo.mele@jhu.edu"), 
-    person(given = "Cornelius", family = "Fritz", role = c("aut", "cre"), email = "corneliusfritz2010@gmail.com"), 
     person(given = "Michael", family = "Schweinberger", role = c("aut"), email = "michael.schweinberger@psu.edu"))
 Description: A toolbox for analyzing and simulating large networks based on hierarchical exponential-family random graph models (HERGMs).'bigergm' implements the estimation for large networks efficiently building on the 'lighthergm' and 'hergm' packages. Moreover, the package contains tools for simulating networks with local dependence to assess the goodness-of-fit.
 License: GPL-3
@@ -23,13 +23,13 @@ Imports: RcppArmadillo (>= 0.10.5), network (>= 1.16.0), Matrix,
 Suggests: rmarkdown, knitr, testthat, sna, tibble
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2024-06-11 18:31:52 UTC; corneliusfritz
-Author: Shota Komatsu [aut],
+Packaged: 2024-06-13 21:29:19 UTC; corneliusfritz
+Author: Cornelius Fritz [aut, cre],
+  Shota Komatsu [aut],
   Juan Nelson Martínez Dahbura [aut],
   Takanori Nishida [aut],
   Angelo Mele [aut],
-  Cornelius Fritz [aut, cre],
   Michael Schweinberger [aut]
 Maintainer: Cornelius Fritz <corneliusfritz2010@gmail.com>
 Repository: CRAN
-Date/Publication: 2024-06-11 19:00:01 UTC
+Date/Publication: 2024-06-13 21:50:13 UTC

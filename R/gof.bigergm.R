@@ -287,13 +287,32 @@ gof.bigergm <- function(object, ...,
       return_within = TRUE, ...
     )
   }
+
+  if(control_within$parallel>1){
+    simulated <- parallel::mcmapply(FUN = function(x,y, compute_geodesic_distance, original_stats) {
+      get_gof_stats(gof_formula, net = x,net_within =  get_within_networks(x, x %v% "block"),
+                    sim_number = y, 
+                    compute_geodesic_distance = compute_geodesic_distance,
+                    to = original_stats$esp_dist$label[max(which(original_stats$esp_dist$esp != 0))])
+    }, x = simulated_networks, y= 1:length(simulated_networks),
+    MoreArgs = list(compute_geodesic_distance = compute_geodesic_distance,  original_stats = original_stats),
+    mc.cores=control_within$parallel, SIMPLIFY = FALSE)
+  } else {
+    simulated <-  mapply(FUN = function(x,y, compute_geodesic_distance, original_stats) {
+      get_gof_stats(gof_formula, net = x,net_within =  get_within_networks(x, x %v% "block"),
+                    sim_number = y, 
+                    compute_geodesic_distance = compute_geodesic_distance,
+                    to = original_stats$esp_dist$label[max(which(original_stats$esp_dist$esp != 0))])
+    }, x = simulated_networks, y= 1:length(simulated_networks), 
+    MoreArgs = list(compute_geodesic_distance = compute_geodesic_distance,  
+    original_stats = original_stats),
+    SIMPLIFY = FALSE)
+  }
+  
+  
+  
   # Get the statistics for all simulated networks
-  simulated <-  mapply(FUN = function(x,y) {
-    get_gof_stats(gof_formula, net = x,net_within =  get_within_networks(x, x %v% "block"),
-                  sim_number = y, 
-                  compute_geodesic_distance = compute_geodesic_distance,
-                  to = original_stats$esp_dist$label[max(which(original_stats$esp_dist$esp != 0))])
-  }, x = simulated_networks, y= 1:length(simulated_networks), SIMPLIFY = FALSE)
+
   geodesic_dist <- lapply(simulated, function(x) x$geodesic_dist)
   network_stats <- lapply(simulated, function(x) x$network_stats)
   network_stats <- do.call(rbind, network_stats)
@@ -328,23 +347,126 @@ gof.bigergm <- function(object, ...,
 #' @export
 plot.gof.bigergm <- function(x, ...) {
   if(!is.null(x$simulated$degree_dist$type)){
-    boxplot(x$simulated$degree_dist$share[x$simulated$degree_dist$type == "in"]~
-              x$simulated$degree_dist$degree[x$simulated$degree_dist$type == "in"],
+    
+    # In degree
+    original_indegree_distribution <- x$original$degree_dist[x$original$degree_dist$type == "in",]
+    simulated_indegree_distribution <- x$simulated$degree_dist[x$simulated$degree_dist$type == "in",]
+    levels =sort(unique(c(original_indegree_distribution$degree,simulated_indegree_distribution$degree)))
+    if(length(levels[!levels %in% original_indegree_distribution$degree])>0){
+      original_indegree_distribution <- rbind(original_indegree_distribution, 
+                                      cbind(degree = levels[!levels %in% original_indegree_distribution$degree], 
+                                            share = rep(0,length(levels[!levels %in% original_indegree_distribution$degree])), 
+                                            type = "in"))
+      original_indegree_distribution <- original_indegree_distribution[order(as.numeric(original_indegree_distribution$degree)),]
+    }
+    
+    if(length(levels[!levels %in% simulated_indegree_distribution$degree])>0){
+      simulated_indegree_distribution <- rbind(simulated_indegree_distribution, 
+                                       cbind(degree = levels[!levels %in% simulated_indegree_distribution$degree], 
+                                             share = rep(0,length(levels[!levels %in% simulated_indegree_distribution$degree])), 
+                                             type = "in",
+                                             nsim = 1))
+      simulated_indegree_distribution <- simulated_indegree_distribution[order(as.numeric(simulated_indegree_distribution$degree)),]
+    }
+    simulated_indegree_distribution$degree <- factor(simulated_indegree_distribution$degree, levels =levels)
+    original_indegree_distribution$degree <- factor(original_indegree_distribution$degree, levels =levels)
+    simulated_indegree_distribution$share <- as.numeric(simulated_indegree_distribution$share)
+    original_indegree_distribution$share <- as.numeric(original_indegree_distribution$share)
+
+    boxplot(simulated_indegree_distribution$share~
+              simulated_indegree_distribution$degree,
             xlab = "In-Degree", ylab = "Share")
-    lines(x$original$degree_dist$share[x$original$degree_dist$type == "in"], col = "red")
-    boxplot(x$simulated$degree_dist$share[x$simulated$degree_dist$type == "out"]~
-              x$simulated$degree_dist$degree[x$simulated$degree_dist$type == "out"],
+    lines(original_indegree_distribution$share, col = "red")
+    # Out degree
+    
+    original_outdegree_distribution <- x$original$degree_dist[x$original$degree_dist$type == "out",]
+    simulated_outdegree_distribution <- x$simulated$degree_dist[x$simulated$degree_dist$type == "out",]
+    levels =sort(unique(c(original_outdegree_distribution$degree,simulated_outdegree_distribution$degree)))
+    
+    if(length(levels[!levels %in% original_outdegree_distribution$degree])>0){
+      original_outdegree_distribution <- rbind(original_outdegree_distribution, 
+                                               cbind(degree = levels[!levels %in% original_outdegree_distribution$degree], 
+                                                     share = rep(0,length(levels[!levels %in% original_outdegree_distribution$degree])), 
+                                                     type = "out"))
+      original_outdegree_distribution <- original_outdegree_distribution[order(as.numeric(original_outdegree_distribution$degree)),]
+    }
+    
+    if(length(levels[!levels %in% simulated_outdegree_distribution$degree])>0){
+      simulated_outdegree_distribution <- rbind(simulated_outdegree_distribution, 
+                                                cbind(degree = levels[!levels %in% simulated_outdegree_distribution$degree], 
+                                                      share = rep(0,length(levels[!levels %in% simulated_outdegree_distribution$degree])), 
+                                                      type = "out",
+                                                      nsim = 1))
+      simulated_outdegree_distribution <- simulated_outdegree_distribution[order(as.numeric(simulated_outdegree_distribution$degree)),]
+    }
+    simulated_outdegree_distribution$degree <- factor(simulated_outdegree_distribution$degree, levels =levels)
+    original_outdegree_distribution$degree <- factor(original_outdegree_distribution$degree, levels =levels)
+    simulated_outdegree_distribution$share <- as.numeric(simulated_outdegree_distribution$share)
+    original_outdegree_distribution$share <- as.numeric(original_outdegree_distribution$share)
+    boxplot(simulated_outdegree_distribution$share~
+              simulated_outdegree_distribution$degree,
             xlab = "Out-Degree", ylab = "Share")
-    lines(x$original$degree_dist$share[x$original$degree_dist$type == "out"], col = "red")
+    lines(original_outdegree_distribution$share, col = "red")
   } else {
+    levels =sort(unique(c(x$original$degree_dist$degree,x$simulated$degree_dist$degree)))
+    if(length(levels[!levels %in% x$original$degree_dist$degree])>0){
+      x$original$degree_dist <- rbind(x$original$degree_dist, 
+                                        cbind(degree = levels[!levels %in% x$original$degree_dist$degree], 
+                                              share = rep(0,length(levels[!levels %in% x$original$degree_dist$degree]))))
+      x$original$degree_dist <- x$original$degree_dist[order(x$original$degree_dist$degree),]
+    }
+    
+    if(length(levels[!levels %in% x$simulated$degree_dist$degree])>0){
+      x$simulated$degree_dist <- rbind(x$simulated$degree_dist, 
+                                      cbind(degree = levels[!levels %in% x$simulated$degree_dist$degree], 
+                                            share = rep(0,length(levels[!levels %in% x$simulated$degree_dist$degree])), 
+                                            nsim = 1))
+      x$simulated$degree_dist <- x$simulated$degree_dist[order(x$simulated$degree_dist$degree),]
+    }
+    x$simulated$degree_dist$degree <- factor(x$simulated$degree_dist$degree, levels =levels)
+    x$original$degree_dist$degree <- factor(x$original$degree_dist$degree, levels =levels)
     boxplot(x$simulated$degree_dist$share~x$simulated$degree_dist$degree, xlab = "Degree", ylab = "Share")
     lines(x$original$degree_dist$share, col = "red")
   }
+  # ESP distribution
+  levels =sort(unique(c(x$original$esp_dist$label,x$simulated$esp_dist$label)))
+  if(length(levels[!levels %in% x$original$esp_dist$label])>0){
+    x$original$esp_dist <- rbind(x$original$esp_dist, 
+                                      cbind(label = levels[!levels %in% x$original$esp_dist$label], 
+                                            esp = rep(0,length(levels[!levels %in% x$original$esp_dist$label]))))
+    x$original$esp_dist <- x$original$esp_dist[order(as.numeric(x$original$esp_dist$label)),]
+  }
   
-  
+  if(length(levels[!levels %in% x$simulated$esp_dist$label])>0){
+    x$simulated$esp_dist <- rbind(x$simulated$esp_dist, 
+                                 cbind(label = levels[!levels %in% x$simulated$esp_dist$label], 
+                                       esp = rep(0,length(levels[!levels %in% x$simulated$esp_dist$label])),
+                                       nsim = 0))
+    x$simulated$esp_dist <- x$simulated$esp_dist[order(as.numeric(x$simulated$esp_dist$label)),]
+  }
+  x$simulated$esp_dist$label <- factor(x$simulated$esp_dist$label, levels =levels)
+  x$original$esp_dist$label <- factor(x$original$esp_dist$label, levels =levels)
   boxplot(x$simulated$esp_dist$esp ~x$simulated$esp_dist$label, xlab = "Edgewise-shared Partner", ylab = "Number")
   lines(x$original$esp_dist$esp, col = "red")
+  
   if(!is.null(x$original$geodesic_dist)){
+    levels =sort(unique(c(x$original$geodesic_dist$dist,x$simulated$geodesic_dist$dist)))
+    if(length(levels[!levels %in% x$original$geodesic_dist$dist])>0){
+      x$original$geodesic_dist <- rbind(x$original$geodesic_dist, 
+                                        cbind(dist = levels[!levels %in% x$original$geodesic_dist$dist], 
+                                              pairs = rep(0,length(levels[!levels %in% x$original$geodesic_dist$dist]))))
+      x$original$geodesic_dist <- x$original$geodesic_dist[order(x$original$geodesic_dist$dist),]
+    }
+    
+    if(length(levels[!levels %in% x$simulated$geodesic_dist$dist])>0){
+      x$simulated$geodesic_dist <- rbind(x$simulated$geodesic_dist, 
+                                        cbind(dist = levels[!levels %in% x$simulated$geodesic_dist$dist], 
+                                              pairs = rep(0,length(levels[!levels %in% x$simulated$geodesic_dist$dist])), 
+                                              nsim = 1))
+      x$simulated$geodesic_dist <- x$simulated$geodesic_dist[order(x$simulated$geodesic_dist$dist),]
+    }
+    x$simulated$geodesic_dist$dist <- factor(x$simulated$geodesic_dist$dist, levels =levels)
+    x$original$geodesic_dist$dist <- factor(x$original$geodesic_dist$dist, levels =levels)
     boxplot(x$simulated$geodesic_dist$pairs ~x$simulated$geodesic_dist$dist, xlab = "Geodesic Distance", ylab = "Number")
     lines(x$original$geodesic_dist, col = "red")
   }

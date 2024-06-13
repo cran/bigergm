@@ -64,7 +64,8 @@ get_features <- function(network, formula) {
     return(list(list_sparse_feature_adjmat = list_sparse_feature_adjmat,
                 node_data = node_data))
   }else{
-    return(NULL)
+    return(list(node_data = data.frame("vertex.names" = network %v% "vertex.names",
+                                           "block" = network %v% "block")))
   }
  
  

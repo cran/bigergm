@@ -234,7 +234,6 @@ bigergm <- function(object,
   # only the preprocessed data be used 
   if ("bigergm" %in% class(object)) {
     if(only_use_preprocessed){
-      n_blocks <- object$checkpoint$n_blocks
       preprocessed_data <- object$checkpoint$preprocessed_data
       object <- object$checkpoint$formula
     }

@@ -605,16 +605,21 @@ edgelist_to_stats <- function(net, edgelist, between_formula) {
 # @return a data frame of sufficient network statistics
 get_between_stats <- function(edgelists, between_formula) {
   net <- get(as.character(between_formula)[2], envir = environment(between_formula))
-  between_stats <-
-    edgelists %>%
-    purrr::map(function(el) {
-      edgelist_to_stats(net, el, between_formula)
-    }) %>%
-    purrr::reduce(function(a, b) {
-      rbind(a, b)
-    })
-  rownames(between_stats) <- NULL
-  data.frame(between_stats)
+  if("list" %in% class(edgelists)){
+    between_stats <-
+      edgelists %>%
+      purrr::map(function(el) {
+        edgelist_to_stats(net, el, between_formula)
+      }) %>%
+      purrr::reduce(function(a, b) {
+        rbind(a, b)
+      })
+    rownames(between_stats) <- NULL
+    data.frame(between_stats)
+  } else {
+    edgelist_to_stats(net, edgelists, between_formula)
+  }
+
 }
 
 #' @importFrom magrittr %>% %<>%

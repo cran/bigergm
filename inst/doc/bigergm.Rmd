@@ -301,7 +301,7 @@ res <-bigergm(
     # The model you would like to estimate
     object = model_formula,
     # The number of blocks
-    n_blocks =  4, initialization = toyNet%v% "block",
+    n_blocks =  4, 
     # The maximum number of MM algorithm steps
     n_MM_step_max = 100,
     # The tolarence for the MM algorithm
@@ -311,7 +311,9 @@ res <-bigergm(
     # Indicate that clustering must take into account nodematch on characteristics
     clustering_with_features = TRUE,
     # Keep track of block memberships at each EM iteration
-    check_block_membership = TRUE
+    check_block_membership = TRUE, 
+    # Name the heuristic algorithm used for initializing the block memberships
+    initialization = "walktrap"
 )
 
 ```
@@ -402,7 +404,7 @@ gof_res <- gof(
   # Set a seed for reproducibility
   seed = 1234,
   # Start at the observed network
-  start_from_observed = TRUE, 
+  start_from_observed = TRUE, type = "within",
   # The control parameters for the simulation
   control_within = ergm::control.simulate.formula(MCMC.burnin = 1000, MCMC.interval = 1000)
 )
@@ -434,7 +436,7 @@ degree_gof <-
   dplyr::ungroup()
 plot(degree_gof$degree, degree_gof$log_mean_share,
      xlab = "Degree", ylab = "Log Prop. of Nodes",
-     ylim = c(-5.5,-1.8), xlim = c(6,20), type = "l", lty = 2)
+     ylim = c(-5.5,-1.8), xlim = c(6,17), type = "l", lty = 2)
 lines(degree_gof$degree, degree_gof$log_mean_share+ 1.96 * degree_gof$log_sd_share, type = "l", lty = 2)
 lines(degree_gof$degree, degree_gof$log_mean_share- 1.96 * degree_gof$log_sd_share, type = "l", lty = 2)
 tmp_info <- gof_res$original$degree_dist %>% 
