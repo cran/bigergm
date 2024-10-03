@@ -1,6 +1,6 @@
-get_dummy_net <- function(n_nodes, n_blocks,  seed = 1234) {
+get_dummy_net <- function(n_nodes, n_blocks,  seed) {
   bigergm_formula <- g ~ edges  + nodematch("x")
-
+  set.seed(seed)
   nodes_data <- tibble::tibble(
     node_id = 1:n_nodes,
     x = sample(1:2, size = n_nodes, replace = T),
@@ -24,7 +24,7 @@ get_dummy_net <- function(n_nodes, n_blocks,  seed = 1234) {
     formula = bigergm_formula,
     coef_between = coef_between_block,
     coef_within = coef_within_block,
-    control_within = sim_control_within
+    control_within = sim_control_within,seed = seed
   )
 
   
@@ -48,9 +48,10 @@ get_dummy_net <- function(n_nodes, n_blocks,  seed = 1234) {
     control_within = sim_control_within
   )
 }
-sim <- get_dummy_net(n_nodes = 50,n_blocks =  2, seed = 1234)
+sim <- get_dummy_net(n_nodes = 50,n_blocks =  2, seed = 12345)
 
-get_dummy_net_nocov <- function(n_nodes, n_blocks,  seed = 1234) {
+get_dummy_net_nocov <- function(n_nodes, n_blocks,  seed) {
+  set.seed(seed)
   bigergm_formula <- g ~ edges 
   
   nodes_data <- tibble::tibble(
@@ -74,7 +75,8 @@ get_dummy_net_nocov <- function(n_nodes, n_blocks,  seed = 1234) {
     formula = bigergm_formula,
     coef_between = coef_between_block,
     coef_within = coef_within_block,
-    control_within = sim_control_within
+    control_within = sim_control_within,
+    seed = seed
   )
   
   
@@ -98,7 +100,7 @@ get_dummy_net_nocov <- function(n_nodes, n_blocks,  seed = 1234) {
     control_within = sim_control_within
   )
 }
-sim_nocov <- get_dummy_net_nocov(n_nodes = 50,n_blocks =  2, seed = 1234)
+sim_nocov <- get_dummy_net_nocov(n_nodes = 50,n_blocks =  2, seed = 12354)
 
 
 
@@ -477,7 +479,7 @@ test_that("Within-connections GOF can be started from the observed network", {
   })
 
 test_that("Full GOF can be started from the observed network", {
-  sim <- get_dummy_net(100, 4)
+  sim <- get_dummy_net(n_nodes = 100, n_blocks = 4,seed = 123)
   g <- sim$g
 
   control_within <- ergm::control.simulate.formula(
@@ -499,7 +501,7 @@ test_that("Full GOF can be started from the observed network", {
   # If it starts from the observed network, the stats should not be zero
   expect_true(all(first_simulation_stats['value'] > 0))
   
-  sim <- get_dummy_net_nocov(100, 4)
+  sim <- get_dummy_net_nocov(100, 4,1234)
   g <- sim$g
   
   control_within <- ergm::control.simulate.formula(

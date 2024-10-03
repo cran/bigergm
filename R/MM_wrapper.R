@@ -95,7 +95,7 @@ MM_wrapper <-
           if (have_numpy + have_infomap != 2) {
             use_infomap_python <- F
             
-            message("Since either Numpy or Infomap is not available in Pythin the igraph implementation is used (see py_dep).")
+            message("Since either Numpy or Infomap is not available in Python the igraph implementation is used (see py_dep).")
           }  
         }
         
@@ -104,13 +104,13 @@ MM_wrapper <-
           opt <- reticulate::import_from_path("infomap_R", path = python_path)
           
           if(is_directed){
-            z_memb_init <- factor(opt$infomap_python_directed(matrix = edgelist,n_clusters = n_blocks), levels = 1:n_blocks)
+            z_memb_init <- factor(opt$infomap_python_directed(matrix = edgelist,n_blocks = n_blocks), levels = 1:n_blocks)
             
             # Make matrix symmetric to check for too sparse clusters
             g_symmetric <- make_symmetric(g)
             z_memb <- check_clusters_sparse(z_memb_init, g_symmetric, n_blocks, eigenvectors_sparse_fn, min_size, verbose = verbose)  
           } else {
-            z_memb_init <- factor(opt$infomap_py$infomap_python(matrix = edgelist,n_clusters = n_blocks), levels = 1:n_blocks)
+            z_memb_init <- factor(opt$infomap_py$infomap_python(matrix = edgelist,n_blocks = n_blocks), levels = 1:n_blocks)
             z_memb <- check_clusters_sparse(z_memb_init, g, n_blocks, eigenvectors_sparse_fn, min_size, verbose = verbose)   
           }
         } else {

@@ -258,6 +258,7 @@ simulate_bigergm <- function(formula,
 #' See \code{\link{simulate_bigergm}} for details of the simulation process 
 #' @param object an object of class `bigergm`
 #' @param seed seed value (integer) for network simulation.
+#' @param only_within If this is TRUE, only within-block networks are simulated.
 #' @param verbose If this is TRUE/1, the program will print out additional information about the progress of simulation.
 #' @param output Normally character, one of "network" (default), "stats", "edgelist", to determine the output of the function.
 #' @param control_within \code{\link[ergm]{control.simulate.formula}} object for fine-tuning ERGM simulation of within-block networks.
@@ -268,7 +269,8 @@ simulate_bigergm <- function(formula,
 #' (default is a list of networks).
 #' @export
 simulate.bigergm <- function (object, nsim = 1, seed = NULL, ..., output = "network",
-                             control_within = ergm::control.simulate.formula(), verbose = 0) {
+                             control_within = ergm::control.simulate.formula(), 
+                             only_within = FALSE, verbose = 0) {
   if (is.null(seed)) {
     seed <- sample.int(10^5, 1)
   }
@@ -291,7 +293,8 @@ simulate.bigergm <- function (object, nsim = 1, seed = NULL, ..., output = "netw
     within_formula = object$est_within$within_formula,
     add_intercepts = object$checkpoint$add_intercepts,
     clustering_with_features = object$checkpoint$clustering_with_features, 
-    sbm_pi = object$sbm_pi
+    sbm_pi = object$sbm_pi,
+    only_within = only_within
   )
 }
 # Extract Covariate Names

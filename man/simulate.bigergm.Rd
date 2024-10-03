@@ -11,6 +11,7 @@
   ...,
   output = "network",
   control_within = ergm::control.simulate.formula(),
+  only_within = FALSE,
   verbose = 0
 )
 }
@@ -26,6 +27,8 @@
 \item{output}{Normally character, one of "network" (default), "stats", "edgelist", to determine the output of the function.}
 
 \item{control_within}{\code{\link[ergm]{control.simulate.formula}} object for fine-tuning ERGM simulation of within-block networks.}
+
+\item{only_within}{If this is TRUE, only within-block networks are simulated.}
 
 \item{verbose}{If this is TRUE/1, the program will print out additional information about the progress of simulation.}
 }

@@ -36,7 +36,7 @@ test_that("Providing a vector as the initialization works", {
   res <- bigergm(
     object = model_formula,
     # The model you would like to estimate
-    n_block = 4,
+    n_blocks = 4,
     # The number of blocks
     n_MM_step_max = 1,
     # The maximum number of MM algorithm steps
