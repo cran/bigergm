@@ -1,4 +1,4 @@
-19656334b57cb23f22f4cf9221bc2ce5 *DESCRIPTION
+1bcc5a95fd13e2974d3f34865ae1dab5 *DESCRIPTION
 5a5fd3566d6443f54373ba99e46fb5d4 *NAMESPACE
 0fede263bd259f8b2ce047c58bc6925a *R/MM_wrapper.R
 505734aff867da2eeae887f282103639 *R/RcppExports.R
@@ -80,4 +80,4 @@ ccc420936e02f42f7e3478d7b49b6d90 *tests/testthat/test-tolerance-check.R
 b7197dc5bde9049a18eab602f50535ff *tests/testthat/test-vector_for_initialization_method.R
 e435c57b59efc9b08779009858831fdc *tests/testthat/test-within-network-stats.R
 cca85397b18a3bfd511ead99d97105b7 *vignettes/bigergm.Rmd
-1383f6b28a7add822a34b7412703ee18 *vignettes/bigergm.html
+1f95a1a94e3f87ba81baa683ecc3833d *vignettes/bigergm.html

@@ -1,14 +1,14 @@
 Package: bigergm
 Title: Fit, Simulate, and Diagnose Hierarchical Exponential-Family
         Models for Big Networks
-Version: 1.2.2
+Version: 1.2.3
 Authors@R: c(
     person(given = "Cornelius", family = "Fritz", role = c("aut", "cre"), email = "corneliusfritz2010@gmail.com"), 
+    person(given = "Michael", family = "Schweinberger", role = c("aut"), email = "michael.schweinberger@psu.edu"),
     person(given = "Shota", family = "Komatsu", role = c("aut"), email = "shota.komatsu@sansan.com"),
     person(given = "Juan Nelson", family = "Martínez Dahbura", role = c("aut"), email = "martinez.dahbura@sansan.com"),
     person(given = "Takanori", family = "Nishida", role = c("aut"), email = "nishida@sansan.com"),
-    person(given = "Angelo", family = "Mele", role = c("aut"), email = "angelo.mele@jhu.edu"), 
-    person(given = "Michael", family = "Schweinberger", role = c("aut"), email = "michael.schweinberger@psu.edu"))
+    person(given = "Angelo", family = "Mele", role = c("aut"), email = "angelo.mele@jhu.edu"))
 Description: A toolbox for analyzing and simulating large networks based on hierarchical exponential-family random graph models (HERGMs).'bigergm' implements the estimation for large networks efficiently building on the 'lighthergm' and 'hergm' packages. Moreover, the package contains tools for simulating networks with local dependence to assess the goodness-of-fit.
 License: GPL-3
 Encoding: UTF-8
@@ -23,13 +23,13 @@ Imports: RcppArmadillo (>= 0.10.5), network (>= 1.16.0), Matrix,
 Suggests: rmarkdown, knitr, testthat, sna, tibble
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2024-10-03 19:02:59 UTC; corneliusfritz
+Packaged: 2024-10-23 19:12:11 UTC; corneliusfritz
 Author: Cornelius Fritz [aut, cre],
+  Michael Schweinberger [aut],
   Shota Komatsu [aut],
   Juan Nelson Martínez Dahbura [aut],
   Takanori Nishida [aut],
-  Angelo Mele [aut],
-  Michael Schweinberger [aut]
+  Angelo Mele [aut]
 Maintainer: Cornelius Fritz <corneliusfritz2010@gmail.com>
 Repository: CRAN
-Date/Publication: 2024-10-03 21:00:02 UTC
+Date/Publication: 2024-10-23 19:40:03 UTC
