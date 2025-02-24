@@ -32,10 +32,8 @@ get_features <- function(network, formula) {
   
   if(sum(nodematch_terms)>0){
     list_var_names <- unlist(lapply(ergm_model_info$terms[nodematch_terms], 
-                                     function(x) gsub(pattern = "nodematch.", 
-                                                      replacement = "", 
-                                                      x$coef.names)))
-    
+                                     function(x) stringr::str_extract(x$coef.names, "(?<=nodematch\\.)[^.]+")))
+    list_var_names <- unique(list_var_names)
     list_var <-
       foreach(i = 1:length(list_var_names)) %do% {
         feature <- network::get.vertex.attribute(x = network, list_var_names[i])

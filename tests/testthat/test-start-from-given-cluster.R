@@ -43,10 +43,11 @@ test_that("starting EM iterations and parameter estimation from a given vector o
       nsim = 1,
       output = "network"
     )
+  
   # Conduct clustering
   cluster_with_feature <-
     bigergm::bigergm(g_sim ~ edges + nodematch("x") + nodematch("y") + triangles,
-      n_blocks = K,
+      n_blocks = 2,
       estimate_parameters = FALSE,
       verbose = 0,
       n_MM_step_max =  3,
@@ -59,6 +60,7 @@ test_that("starting EM iterations and parameter estimation from a given vector o
       check_blocks = TRUE,seed = 123
     )
 
+  
   # Check if starting from the previously estimated block memberships works.
   expect_error(result <-
                  bigergm::bigergm(g_sim ~ edges + nodematch("x") + nodematch("y") + triangles,

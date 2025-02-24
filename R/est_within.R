@@ -89,7 +89,7 @@ est_within <-
     dep_terms <-
       terms %>% purrr::map(function(t) {
         dep <- t$dependence
-        is_dep <- is.null(dep) || dep || t$offset || grepl("N\\(",t$coef.names)
+        is_dep <- is.null(dep) || dep || t$offset[1] || grepl("N\\(",t$coef.names)[1]
       }) %>% unlist()
     
     if(add_intercepts){

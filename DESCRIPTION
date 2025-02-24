@@ -1,7 +1,7 @@
 Package: bigergm
 Title: Fit, Simulate, and Diagnose Hierarchical Exponential-Family
         Models for Big Networks
-Version: 1.2.3
+Version: 1.2.4
 Authors@R: c(
     person(given = "Cornelius", family = "Fritz", role = c("aut", "cre"), email = "corneliusfritz2010@gmail.com"), 
     person(given = "Michael", family = "Schweinberger", role = c("aut"), email = "michael.schweinberger@psu.edu"),
@@ -23,7 +23,7 @@ Imports: RcppArmadillo (>= 0.10.5), network (>= 1.16.0), Matrix,
 Suggests: rmarkdown, knitr, testthat, sna, tibble
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2024-10-23 19:12:11 UTC; corneliusfritz
+Packaged: 2025-02-24 10:49:46 UTC; corneliusfritz
 Author: Cornelius Fritz [aut, cre],
   Michael Schweinberger [aut],
   Shota Komatsu [aut],
@@ -32,4 +32,4 @@ Author: Cornelius Fritz [aut, cre],
   Angelo Mele [aut]
 Maintainer: Cornelius Fritz <corneliusfritz2010@gmail.com>
 Repository: CRAN
-Date/Publication: 2024-10-23 19:40:03 UTC
+Date/Publication: 2025-02-24 11:30:02 UTC

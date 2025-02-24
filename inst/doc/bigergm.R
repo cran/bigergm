@@ -7,7 +7,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  install.packages("bigergm")
+# install.packages("bigergm")
 
 ## ----setup, results=FALSE, message=FALSE, warning=FALSE, echo=FALSE-----------
 library(bigergm)

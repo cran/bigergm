@@ -67,7 +67,7 @@
 #' If "MLE", then an approximate maximum likelihood estimator is conducted. If "CD" (EXPERIMENTAL), the Monte-Carlo contrastive divergence estimate is returned. 
 #' @param control_within A list of control parameters for the \code{\link[ergm]{ergm}} function used to estimate the parameters of the within model. See \code{\link[ergm]{control.ergm}} for details.
 #' @param only_use_preprocessed If `TRUE`, the function only uses the preprocessed data from a previous fit but does not continue the estimation from its final iteration, instead the estimation is started again from the provided initialization.
-#' @param clustering_with_features If `TRUE`, clustering is implemented using the discrete covariates specified in the formula.
+#' @param clustering_with_features If `TRUE`, clustering is implemented using the discrete covariates specified in the formula. At the moment, we only support the \code{nodematch} term and disregard diff = TRUE if provided. 
 #' @param compute_pi If `TRUE`, this function keeps track of pi matrices at each MM iteration.
 #' If the network is large, we strongly recommend to set to be `FALSE`.
 #' @param check_alpha_update If `TRUE`, this function keeps track of alpha matrices at each MM iteration.
